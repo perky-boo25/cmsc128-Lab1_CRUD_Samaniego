@@ -35,3 +35,5 @@ unlinked_spec.ds
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.jav.idea/
 *.iml
+.idea/
+*.iml

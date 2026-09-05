@@ -33,4 +33,5 @@ unlinked_spec.ds
 **/android/gradlew
 **/android/gradlew.bat
 **/android/local.properties
-**/android/**/GeneratedPluginRegistrant.jav
+**/android/**/GeneratedPluginRegistrant.jav.idea/
+*.iml

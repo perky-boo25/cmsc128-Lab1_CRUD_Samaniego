@@ -36,6 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^4.14.0
   cloud_firestore: ^6.9.0
+  provider: ^6.1.5+1
+  intl: ^0.20.3
+  syncfusion_flutter_calendar: ^34.2.6
 
 dev_dependencies:
   flutter_test:

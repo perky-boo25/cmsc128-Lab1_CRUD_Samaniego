@@ -1,6 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'firebase_options.dart';
+import 'screens/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,18 +16,16 @@ Future<void> main() async {
 class IskoLaterApp extends StatelessWidget {
   const IskoLaterApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'IsKO-LATER',
       theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorSchemeSeed: Colors.brown,
         useMaterial3: true,
+        textTheme: GoogleFonts.montserratTextTheme(),
       ),
-      home: const Scaffold(
-        body: Center(child: Text('IsKO-LATER')),
-      )
+      home: const HomeScreen(),
     );
   }
 }

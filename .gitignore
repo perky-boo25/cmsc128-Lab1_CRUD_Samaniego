@@ -1,16 +1,19 @@
 # Miscellaneous
 *.class
 *.lock
+!pubspec.lock
 *.log
 *.pyc
 *.swp
 .buildlog/
 .history
+.DS_Store
+Thumbs.db
 
 # Firebase / secrets
+.env
 lib/firebase_options.dart
 android/app/google-services.json
-.env
 
 # Flutter/Dart/Pub related
 .dart_tool/
@@ -33,7 +36,7 @@ unlinked_spec.ds
 **/android/gradlew
 **/android/gradlew.bat
 **/android/local.properties
-**/android/**/GeneratedPluginRegistrant.jav.idea/
-*.iml
+**/android/**/GeneratedPluginRegistrant.java
+
 .idea/
 *.iml

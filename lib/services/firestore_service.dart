@@ -17,6 +17,7 @@ class FirestoreService {
   // real time Firestoreupdates
   Stream<List<Task>> streamTasks() {
     return _taskRef
+        .where('deletedAt', isNull: true)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
@@ -36,5 +37,16 @@ class FirestoreService {
 
   Future<void> updateTask(Task task) async {
     await _taskRef.doc(task.id).update(task.toMap());
+  }
+
+  //DELETE
+  Future<void> softDelete(Task task) async {
+    await _taskRef.doc(task.id).update({
+      'deletedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> undoDelete(Task task) async {
+    await _taskRef.doc(task.id).update({'deletedAt': null});
   }
 }

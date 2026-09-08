@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum Priority {low, medium, high}
-enum TaskTags {school, personal, others}
+enum Priority { low, medium, high }
+
+enum TaskTags { school, personal, others }
 
 // data model - needed for one task/ to-do item
 class Task {
@@ -12,9 +13,10 @@ class Task {
   final TaskTags tag;
   final bool isDone;
   final DateTime createdAt;
+  final DateTime? deletedAt;
 
   //constructor - builds a task
-  Task ({
+  Task({
     required this.id,
     required this.title,
     required this.dueDateTime,
@@ -22,10 +24,11 @@ class Task {
     required this.tag,
     this.isDone = false,
     required this.createdAt,
+    this.deletedAt,
   });
 
   // task -> Map so it can be written to Firestore
-  Map<String, dynamic> toMap(){
+  Map<String, dynamic> toMap() {
     return {
       'title': title,
       'dueDateTime': Timestamp.fromDate(dueDateTime),
@@ -33,6 +36,7 @@ class Task {
       'tag': tag.name,
       'isDone': isDone,
       'createdAt': Timestamp.fromDate(createdAt),
+      'deletedAt': deletedAt != null ? Timestamp.fromDate(deletedAt!) : null,
     };
   }
 
@@ -44,8 +48,9 @@ class Task {
       dueDateTime: (map['dueDateTime'] as Timestamp).toDate(),
       priority: Priority.values.byName(map['priority'] as String),
       tag: TaskTags.values.byName(map['tag'] as String),
-      isDone: map['isDone'] as bool? ??false,
+      isDone: map['isDone'] as bool? ?? false,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
+      deletedAt: (map['deletedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -56,6 +61,8 @@ class Task {
     Priority? priority,
     TaskTags? tag,
     bool? isDone,
+    DateTime? deletedAt,
+    bool clearDeletedAt = false,
   }) {
     return Task(
       id: id,
@@ -65,6 +72,7 @@ class Task {
       tag: tag ?? this.tag,
       isDone: isDone ?? this.isDone,
       createdAt: createdAt,
+      deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
 }

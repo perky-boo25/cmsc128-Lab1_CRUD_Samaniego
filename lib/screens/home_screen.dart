@@ -170,7 +170,40 @@ class _TaskList extends StatelessWidget {
               }
             }
           },
-          onDelete: () {},
+          onDelete: () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: const Text('Delete this task?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    child: const Text('Delete'),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirmed != true) return;
+
+            final messenger = ScaffoldMessenger.of(
+              context,
+            ); // capture BEFORE the await
+            await FirestoreService().softDelete(task);
+            messenger.showSnackBar(
+              SnackBar(
+                content: const Text('Task deleted'),
+                action: SnackBarAction(
+                  label: 'Undo',
+                  onPressed: () => FirestoreService().undoDelete(task),
+                ),
+              ),
+            );
+          },
         );
       },
     );

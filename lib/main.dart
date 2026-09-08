@@ -26,7 +26,7 @@ class IskoLaterApp extends StatelessWidget {
       theme: ThemeData(
         colorSchemeSeed: Colors.brown,
         useMaterial3: true,
-        textTheme: GoogleFonts.montserratTextTheme(),
+        textTheme: GoogleFonts.dmSansTextTheme(),
       ),
 
       //first screen to launch

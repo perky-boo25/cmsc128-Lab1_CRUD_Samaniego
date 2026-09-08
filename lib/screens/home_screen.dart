@@ -78,6 +78,8 @@ class _HomeHeader extends StatelessWidget {
                   const Icon(Icons.star, size: 16),
                 ],
               ),
+
+              // profile icon on the right, still haven't wired yet
               GestureDetector(
 
                 // TODO: go to a profile/settings screen
@@ -91,6 +93,9 @@ class _HomeHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
+
+          //greeting message
+          //NOTE: name is still hardcoded
           RichText(
             text: TextSpan(
               style: GoogleFonts.playfairDisplay(
@@ -163,6 +168,7 @@ class _HomeBottomNav extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           // TODO: decide what this button should do (filter? sort?)
+          //left icon
           IconButton(
             icon: const Icon(Icons.filter_list),
             tooltip: 'Filter / sort',
@@ -170,6 +176,7 @@ class _HomeBottomNav extends StatelessWidget {
           ),
           const SizedBox(width: 40), // leaves room for the FAB
           // TODO: build a calendar view screen and navigate to it here
+          // right icon
           IconButton(
             icon: const Icon(Icons.calendar_month_outlined),
             tooltip: 'Calendar view',

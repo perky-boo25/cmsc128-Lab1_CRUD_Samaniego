@@ -4,15 +4,18 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'firebase_options.dart';
 import 'screens/home_screen.dart';
-
+// entry point - setting up firebase before the app runs
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // conection to firebase backend
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const IskoLaterApp());
 }
 
+// main widget - app wide theme and starting screen
 class IskoLaterApp extends StatelessWidget {
   const IskoLaterApp({super.key});
 
@@ -25,6 +28,8 @@ class IskoLaterApp extends StatelessWidget {
         useMaterial3: true,
         textTheme: GoogleFonts.montserratTextTheme(),
       ),
+
+      //first screen to launch
       home: const HomeScreen(),
     );
   }

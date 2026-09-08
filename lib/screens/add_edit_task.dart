@@ -50,12 +50,14 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
     _tag = task?.tag ?? TaskTags.personal;
   }
 
+  //cleans up the controller so it doesn't leak memory
   @override
   void dispose() {
     _titleController.dispose(); // always dispose controllers
     super.dispose();
   }
 
+  //opens date picker and updates due date, keeping the time as is
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -69,6 +71,7 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
     });
   }
 
+  // opens time picker and update due time, keeping the date as is
   Future<void> _pickTime() async {
     final picked = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(_dueDateTime));
     if (picked == null) return; // user cancelled
@@ -77,6 +80,7 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
     });
   }
 
+  //validates form and then creates/update task
   void _save() {
     if (!_formKey.currentState!.validate()) return; // stop if title is empty
 
@@ -107,6 +111,8 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                   decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
                 ),
               ),
+
+              // title chanfes depending on add or edit mode
               Text(_isEditing ? 'Edit Task' : 'Add Task', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
               TextFormField(
@@ -115,6 +121,8 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                 validator: (value) => (value == null || value.trim().isEmpty) ? 'Title is required' : null,
               ),
               const SizedBox(height: 16),
+
+              //tapping opens date picker
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Due date'),
@@ -122,6 +130,8 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                 trailing: const Icon(Icons.calendar_today),
                 onTap: _pickDate,
               ),
+
+              // tapping opens the time picker
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Due time'),
@@ -129,7 +139,10 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                 trailing: const Icon(Icons.access_time),
                 onTap: _pickTime,
               ),
+
               const SizedBox(height: 16),
+
+              // priority dropdown -  get from enum data model
               DropdownButtonFormField<Priority>(
                 initialValue: _priority,
                 decoration: const InputDecoration(labelText: 'Priority'),
@@ -137,6 +150,8 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                 onChanged: (value) => setState(() => _priority = value!),
               ),
               const SizedBox(height: 16),
+
+              // tag dropdown - get from enum data model
               DropdownButtonFormField<TaskTags>(
                 initialValue: _tag,
                 decoration: const InputDecoration(labelText: 'Tag'),
@@ -144,6 +159,8 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                 onChanged: (value) => setState(() => _tag = value!),
               ),
               const SizedBox(height: 24),
+
+              //validation + save
               ElevatedButton(onPressed: _save, child: Text(_isEditing ? 'Save Changes' : 'Add Task')),
               const SizedBox(height: 8),
             ],

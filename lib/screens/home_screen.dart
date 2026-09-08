@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../models/task.dart';
+import '../services/firestore_service.dart';
+import '../widgets/task_card.dart';
 import 'add_edit_task.dart';
+
 // TODO: build a calendar view screen and import it here
 
 // the app's default screen. This IS the task list for now —
@@ -12,11 +16,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    // TODO: get data from Firestore 
-
-    final bool hasTasks = false;
-
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -24,29 +23,51 @@ class HomeScreen extends StatelessWidget {
             const _HomeHeader(),
 
             // Show the list if we have tasks, otherwise show the empty state
-
             Expanded(
-              child: hasTasks
-                  ? const _TaskListPlaceholder()
-                  : const _EmptyState(),
+              child: StreamBuilder<List<Task>>(
+                stream: FirestoreService().streamTasks(),
+                builder: (context, snapshot) {
+                  //Firestore initial response
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  //if something is wrong from Firestore
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text('Error loading tasks: ${snapshot.error}'),
+                    );
+                  }
+
+                  final tasks = snapshot.data ?? [];
+                  return tasks.isEmpty
+                      ? const _EmptyState()
+                      : _TaskList(tasks: tasks);
+                },
+              ),
             ),
           ],
         ),
       ),
 
       // The + button opens the add-task form as a popup (a "bottom sheet")
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showAddEditTaskSheet(context),
-        child: const Icon(Icons.add),
+      floatingActionButton: SizedBox(
+        width: 80,
+        height: 80,
+        child: FloatingActionButton(
+          onPressed: () => showAddEditTaskSheet(context),
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add),
+        ),
       ),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: const _HomeBottomNav(),
     );
   }
 }
 
-/// Peach bar at the top: today's date, greeting, and a profile icon.
+/// Greeting bar at the top: today's date, greeting, and a profile icon.
 
 class _HomeHeader extends StatelessWidget {
   const _HomeHeader();
@@ -81,10 +102,11 @@ class _HomeHeader extends StatelessWidget {
 
               // profile icon on the right, still haven't wired yet
               GestureDetector(
-
                 // TODO: go to a profile/settings screen
-                
-                onTap: () => throw UnimplementedError('Profile screen not implemented yet'),
+
+                onTap: () => throw UnimplementedError(
+                  'Profile screen not implemented yet',
+                ),
                 child: const CircleAvatar(
                   backgroundColor: Colors.white,
                   child: Icon(Icons.person_outline, color: Colors.black87),
@@ -106,7 +128,10 @@ class _HomeHeader extends StatelessWidget {
               children: const [
                 TextSpan(text: 'Good morning, '),
                 // TODO: use the real logged-in user's name
-                TextSpan(text: 'User.', style: TextStyle(fontStyle: FontStyle.italic)),
+                TextSpan(
+                  text: 'User.',
+                  style: TextStyle(fontStyle: FontStyle.italic),
+                ),
               ],
             ),
           ),
@@ -121,12 +146,29 @@ class _HomeHeader extends StatelessWidget {
 
 /// Placeholder for the real task list — not built yet.
 /// TODO: show a ListView of task cards here once we have data
-class _TaskListPlaceholder extends StatelessWidget {
-  const _TaskListPlaceholder();
+class _TaskList extends StatelessWidget {
+  final List<Task> tasks;
+
+  const _TaskList({required this.tasks});
 
   @override
   Widget build(BuildContext context) {
-    throw UnimplementedError('Task list rendering not implemented yet');
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8, bottom: 80),
+      itemCount: tasks.length,
+      itemBuilder: (context, i) {
+        final task = tasks[i];
+        return TaskCard(
+          task: task,
+          // TODO: wire these up once UPDATE/DELETE are built.
+          // left as no-ops (instead of throwing) so tapping a card while
+          // testing ADD doesn't crash the screen.
+          onTap: () {},
+          onToggleDone: () {},
+          onDelete: () {},
+        );
+      },
+    );
   }
 }
 
@@ -144,10 +186,17 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'No tasks so far',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+            ),
           ),
           const SizedBox(height: 4),
-          Text('Tap + to add your first task', style: TextStyle(color: Colors.grey.shade500)),
+          Text(
+            'Tap + to add your first task',
+            style: TextStyle(color: Colors.grey.shade500),
+          ),
         ],
       ),
     );
@@ -172,7 +221,8 @@ class _HomeBottomNav extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.filter_list),
             tooltip: 'Filter / sort',
-            onPressed: () => throw UnimplementedError('Filter/sort not implemented yet'),
+            onPressed: () =>
+                throw UnimplementedError('Filter/sort not implemented yet'),
           ),
           const SizedBox(width: 40), // leaves room for the FAB
           // TODO: build a calendar view screen and navigate to it here
@@ -180,7 +230,8 @@ class _HomeBottomNav extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.calendar_month_outlined),
             tooltip: 'Calendar view',
-            onPressed: () => throw UnimplementedError('Calendar view not implemented yet'),
+            onPressed: () =>
+                throw UnimplementedError('Calendar view not implemented yet'),
           ),
         ],
       ),

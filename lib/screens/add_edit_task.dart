@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:isko_later/services/firestore_service.dart';
 
 import '../models/task.dart';
 
@@ -29,8 +30,32 @@ class AddEditTaskSheet extends StatefulWidget {
   State<AddEditTaskSheet> createState() => _AddEditTaskSheetState();
 }
 
+Color _priorityColor(Priority p) {
+  switch (p) {
+    case Priority.high:
+      return Colors.pinkAccent;
+    case Priority.medium:
+      return Colors.orangeAccent;
+    case Priority.low:
+      return Colors.blueAccent;
+  }
+}
+
+IconData tagIcon(TaskTags t) {
+  switch (t) {
+    case TaskTags.school:
+      return Icons.school;
+    case TaskTags.personal:
+      return Icons.person;
+    case TaskTags.others:
+      return Icons.label_outline;
+  }
+}
+
 class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
   final _formKey = GlobalKey<FormState>(); // used to validate the form
+  final _firestoreService = FirestoreService();
+
   late TextEditingController _titleController;
   late DateTime _dueDateTime;
   late Priority _priority;
@@ -39,13 +64,18 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
   // true if we're editing an existing task instead of making a new one
   bool get _isEditing => widget.existingTask != null;
 
+  //true while save() is awaiting in Firestore
+  // disabling submit button during network calls
+  bool _isSaving = false;
+
   @override
   void initState() {
     super.initState();
     // fill the form with the existing task's data, or sensible defaults
     final task = widget.existingTask;
     _titleController = TextEditingController(text: task?.title ?? '');
-    _dueDateTime = task?.dueDateTime ?? DateTime.now().add(const Duration(hours: 1));
+    _dueDateTime =
+        task?.dueDateTime ?? DateTime.now().add(const Duration(hours: 1));
     _priority = task?.priority ?? Priority.medium;
     _tag = task?.tag ?? TaskTags.personal;
   }
@@ -65,36 +95,83 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
+
     if (picked == null) return; // user cancelled
     setState(() {
-      _dueDateTime = DateTime(picked.year, picked.month, picked.day, _dueDateTime.hour, _dueDateTime.minute);
+      _dueDateTime = DateTime(
+        picked.year,
+        picked.month,
+        picked.day,
+        _dueDateTime.hour,
+        _dueDateTime.minute,
+      );
     });
   }
 
   // opens time picker and update due time, keeping the date as is
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(_dueDateTime));
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_dueDateTime),
+    );
     if (picked == null) return; // user cancelled
     setState(() {
-      _dueDateTime = DateTime(_dueDateTime.year, _dueDateTime.month, _dueDateTime.day, picked.hour, picked.minute);
+      _dueDateTime = DateTime(
+        _dueDateTime.year,
+        _dueDateTime.month,
+        _dueDateTime.day,
+        picked.hour,
+        picked.minute,
+      );
     });
   }
 
   //validates form and then creates/update task
-  void _save() {
+  Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return; // stop if title is empty
 
     // TODO: build a Task from the fields above, then:
     //   - call addTask() if !_isEditing (CREATE — not built yet)
     //   - call updateTask() if _isEditing (UPDATE — not built yet)
-    throw UnimplementedError('Save (create/update) not implemented yet');
+
+    setState(() => _isSaving = true);
+
+    final task = Task(
+      id: '',
+      title: _titleController.text.trim(),
+      dueDateTime: _dueDateTime,
+      priority: _priority,
+      tag: _tag,
+      createdAt: DateTime.now(),
+    );
+
+    try {
+      if (!_isEditing) {
+        //CREATE
+        await _firestoreService.addTask(task);
+      } else {
+        //TODO: update function
+        throw UnimplementedError('Edit not yet implemented');
+      }
+
+      if (mounted) Navigator.of(context).pop(); //close sheet on success
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Could not save task: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       // pushes the sheet up above the keyboard when it opens
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         child: Form(
           key: _formKey,
@@ -108,17 +185,25 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                   width: 40,
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
 
               // title chanfes depending on add or edit mode
-              Text(_isEditing ? 'Edit Task' : 'Add Task', style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                _isEditing ? 'Edit Task' : 'Add Task',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) => (value == null || value.trim().isEmpty) ? 'Title is required' : null,
+                validator: (value) => (value == null || value.trim().isEmpty)
+                    ? 'Title is required'
+                    : null,
               ),
               const SizedBox(height: 16),
 
@@ -126,7 +211,9 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Due date'),
-                subtitle: Text('${_dueDateTime.year}-${_dueDateTime.month}-${_dueDateTime.day}'),
+                subtitle: Text(
+                  '${_dueDateTime.year}-${_dueDateTime.month}-${_dueDateTime.day}',
+                ),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: _pickDate,
               ),
@@ -135,7 +222,9 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Due time'),
-                subtitle: Text(TimeOfDay.fromDateTime(_dueDateTime).format(context)),
+                subtitle: Text(
+                  TimeOfDay.fromDateTime(_dueDateTime).format(context),
+                ),
                 trailing: const Icon(Icons.access_time),
                 onTap: _pickTime,
               ),
@@ -143,25 +232,66 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
               const SizedBox(height: 16),
 
               // priority dropdown -  get from enum data model
-              DropdownButtonFormField<Priority>(
-                initialValue: _priority,
-                decoration: const InputDecoration(labelText: 'Priority'),
-                items: Priority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
-                onChanged: (value) => setState(() => _priority = value!),
+              Text('Priority', style: Theme.of(context).textTheme.labelLarge),
+              const SizedBox(height: 8),
+              SegmentedButton<Priority>(
+                showSelectedIcon: false,
+                segments: Priority.values.map((p) {
+                  return ButtonSegment<Priority>(
+                    value: p,
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star, size: 14, color: _priorityColor(p)),
+                        const SizedBox(width: 4),
+                        Text(p.name),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                selected: {_priority},
+                onSelectionChanged: (selected) =>
+                    setState(() => _priority = selected.first),
               ),
+
               const SizedBox(height: 16),
 
               // tag dropdown - get from enum data model
-              DropdownButtonFormField<TaskTags>(
-                initialValue: _tag,
-                decoration: const InputDecoration(labelText: 'Tag'),
-                items: TaskTags.values.map((t) => DropdownMenuItem(value: t, child: Text(t.name))).toList(),
-                onChanged: (value) => setState(() => _tag = value!),
+              Text('Tag', style: Theme.of(context).textTheme.labelLarge),
+              const SizedBox(height: 8),
+              SegmentedButton<TaskTags>(
+                showSelectedIcon: false,
+                segments: TaskTags.values.map((t) {
+                  return ButtonSegment<TaskTags>(
+                    value: t,
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(tagIcon(t), size: 14),
+                        const SizedBox(width: 4),
+                        Text(t.name),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                selected: {_tag},
+                onSelectionChanged: (selected) =>
+                    setState(() => _tag = selected.first),
               ),
+
               const SizedBox(height: 24),
 
               //validation + save
-              ElevatedButton(onPressed: _save, child: Text(_isEditing ? 'Save Changes' : 'Add Task')),
+              ElevatedButton(
+                onPressed: _isSaving ? null : _save,
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(_isEditing ? 'Save Changes' : 'Add Task'),
+              ),
               const SizedBox(height: 8),
             ],
           ),

@@ -3,11 +3,6 @@ import 'package:isko_later/services/firestore_service.dart';
 
 import '../models/task.dart';
 
-/// Call this to pop up the add/edit task form as a bottom sheet.
-/// Pass [existingTask] to pre-fill the form for editing.
-///
-/// TODO: once Create/Update exist, save the task inside _save() below
-/// and remove this comment.
 Future<void> showAddEditTaskSheet(BuildContext context, {Task? existingTask}) {
   return showModalBottomSheet<void>(
     context: context,
@@ -130,31 +125,31 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return; // stop if title is empty
 
-    // TODO: build a Task from the fields above, then:
-    //   - call addTask() if !_isEditing (CREATE — not built yet)
-    //   - call updateTask() if _isEditing (UPDATE — not built yet)
-
     setState(() => _isSaving = true);
 
-    final task = Task(
-      id: '',
-      title: _titleController.text.trim(),
-      dueDateTime: _dueDateTime,
-      priority: _priority,
-      tag: _tag,
-      createdAt: DateTime.now(),
-    );
-
     try {
-      if (!_isEditing) {
-        //CREATE
-        await _firestoreService.addTask(task);
+      if (_isEditing) {
+        final updatedTask = widget.existingTask!.copyWith(
+          title: _titleController.text.trim(),
+          dueDateTime: _dueDateTime,
+          priority: _priority,
+          tag: _tag,
+        );
+        await _firestoreService.updateTask(updatedTask);
       } else {
-        //TODO: update function
-        throw UnimplementedError('Edit not yet implemented');
+        final task = Task(
+          id: '',
+          title: _titleController.text.trim(),
+          dueDateTime: _dueDateTime,
+          priority: _priority,
+          tag: _tag,
+          createdAt: DateTime.now(),
+        );
+
+        await _firestoreService.addTask(task);
       }
 
-      if (mounted) Navigator.of(context).pop(); //close sheet on success
+      if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)

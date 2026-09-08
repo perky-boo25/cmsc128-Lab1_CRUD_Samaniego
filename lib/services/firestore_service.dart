@@ -29,8 +29,12 @@ class FirestoreService {
         );
   }
 
-  //UPDATE (partial): checkbox purposes
+  //UPDATE
   Future<void> toggleTaskDone(Task task) async {
     await _taskRef.doc(task.id).update({'isDone': !task.isDone});
+  }
+
+  Future<void> updateTask(Task task) async {
+    await _taskRef.doc(task.id).update(task.toMap());
   }
 }

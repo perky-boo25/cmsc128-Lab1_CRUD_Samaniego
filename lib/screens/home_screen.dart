@@ -144,8 +144,6 @@ class _HomeHeader extends StatelessWidget {
   String _formattedDate(DateTime d) => DateFormat('EEEE, MMMM d, y').format(d);
 }
 
-/// Placeholder for the real task list — not built yet.
-/// TODO: show a ListView of task cards here once we have data
 class _TaskList extends StatelessWidget {
   final List<Task> tasks;
 
@@ -160,11 +158,18 @@ class _TaskList extends StatelessWidget {
         final task = tasks[i];
         return TaskCard(
           task: task,
-          // TODO: wire these up once UPDATE/DELETE are built.
-          // left as no-ops (instead of throwing) so tapping a card while
-          // testing ADD doesn't crash the screen.
-          onTap: () {},
-          onToggleDone: () {},
+          onTap: () => showAddEditTaskSheet(context, existingTask: task),
+          onToggleDone: () async {
+            try {
+              await FirestoreService().toggleTaskDone(task);
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Could not update task: $e')),
+                );
+              }
+            }
+          },
           onDelete: () {},
         );
       },

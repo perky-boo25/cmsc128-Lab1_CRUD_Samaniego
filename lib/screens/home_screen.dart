@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../models/task.dart';
 import '../services/firestore_service.dart';
 import '../widgets/task_card.dart';
+import '../widgets/app_shared.dart';
 import 'add_edit_task.dart';
 
 // TODO: build a calendar view screen and import it here
@@ -51,19 +52,9 @@ class HomeScreen extends StatelessWidget {
       ),
 
       // The + button opens the add-task form as a popup (a "bottom sheet")
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showAddEditTaskSheet(context),
-        backgroundColor: const Color(0xFFC65A42),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text(
-          'Add task',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.0),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      ),
+      floatingActionButton: const AppAddTaskFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      bottomNavigationBar: const _HomeBottomNav(),
+      bottomNavigationBar: const AppBottomNav(currentTab: AppTab.tasks),
     );
   }
 }
@@ -239,89 +230,6 @@ class _EmptyState extends StatelessWidget {
             style: TextStyle(color: Colors.grey.shade500),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Bottom bar with a notch cut out for the FAB to sit in.
-class _HomeBottomNav extends StatelessWidget {
-  const _HomeBottomNav();
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      // ← add this
-      top: false,
-      child: Container(
-        color: const Color(0xFFFCE8CB),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _NavItem(
-              icon: Icons.list_alt,
-              label: 'Tasks',
-              selected: true,
-              onTap: () {},
-            ),
-            _NavItem(
-              icon: Icons.calendar_month_outlined,
-              label: 'Calendar',
-              selected: false,
-              onTap: () =>
-                  throw UnimplementedError('Calendar view not implemented yet'),
-            ),
-            _NavItem(
-              icon: Icons.person_outline,
-              label: 'Profile',
-              selected: false,
-              onTap: () => throw UnimplementedError(
-                'Profile screen not implemented yet',
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFFF1DDBE) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: const Color(0xFF4A3427)),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(color: Color(0xFF4A3427), fontSize: 12),
-            ),
-          ],
-        ),
       ),
     );
   }

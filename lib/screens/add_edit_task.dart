@@ -212,7 +212,12 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                 trailing: const Icon(Icons.calendar_today),
                 onTap: _pickDate,
               ),
-
+              const Divider(
+                color: Color.fromARGB(255, 68, 39, 10),
+                thickness: 0.75,
+                indent: 1,
+                endIndent: 1,
+              ),
               // tapping opens the time picker
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -223,7 +228,12 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
                 trailing: const Icon(Icons.access_time),
                 onTap: _pickTime,
               ),
-
+              const Divider(
+                color: Color.fromARGB(255, 68, 39, 10),
+                thickness: 0.75,
+                indent: 1,
+                endIndent: 1,
+              ),
               const SizedBox(height: 16),
 
               // priority dropdown -  get from enum data model
@@ -279,13 +289,21 @@ class _AddEditTaskSheetState extends State<AddEditTaskSheet> {
               //validation + save
               ElevatedButton(
                 onPressed: _isSaving ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFC65A42),
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(width: 1.0),
+                ),
                 child: _isSaving
                     ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(_isEditing ? 'Save Changes' : 'Add Task'),
+                    : Text(
+                        _isEditing ? 'Save Changes' : 'Add Task',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
               ),
               const SizedBox(height: 8),
             ],

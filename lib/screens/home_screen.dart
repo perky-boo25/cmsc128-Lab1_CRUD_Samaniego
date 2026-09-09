@@ -51,17 +51,18 @@ class HomeScreen extends StatelessWidget {
       ),
 
       // The + button opens the add-task form as a popup (a "bottom sheet")
-      floatingActionButton: SizedBox(
-        width: 80,
-        height: 80,
-        child: FloatingActionButton(
-          onPressed: () => showAddEditTaskSheet(context),
-          shape: const CircleBorder(),
-          child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => showAddEditTaskSheet(context),
+        backgroundColor: const Color(0xFFC65A42),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text(
+          'Add task',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.0),
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
-
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: const _HomeBottomNav(),
     );
   }
@@ -71,6 +72,18 @@ class HomeScreen extends StatelessWidget {
 
 class _HomeHeader extends StatelessWidget {
   const _HomeHeader();
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+
+    if (hour >= 1 && hour < 12) {
+      return 'Good morning, ';
+    } else if (hour >= 12 && hour < 18) {
+      return 'Good afternoon, ';
+    } else {
+      return 'Good evening, ';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,38 +112,28 @@ class _HomeHeader extends StatelessWidget {
                   const Icon(Icons.star, size: 16),
                 ],
               ),
-
-              // profile icon on the right, still haven't wired yet
-              GestureDetector(
-                // TODO: go to a profile/settings screen
-
-                onTap: () => throw UnimplementedError(
-                  'Profile screen not implemented yet',
-                ),
-                child: const CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person_outline, color: Colors.black87),
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
 
           //greeting message
           //NOTE: name is still hardcoded
           RichText(
             text: TextSpan(
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 26,
+              style: GoogleFonts.dmSerifDisplay(
+                fontSize: 30,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
-              children: const [
-                TextSpan(text: 'Good morning, '),
+              children: [
+                TextSpan(text: _getGreeting()),
                 // TODO: use the real logged-in user's name
                 TextSpan(
                   text: 'User.',
-                  style: TextStyle(fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    color: Color(0xFFC65A42),
+                  ),
                 ),
               ],
             ),
@@ -247,31 +250,78 @@ class _HomeBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      color: const Color(0xFFFCE8CB),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          // TODO: decide what this button should do (filter? sort?)
-          //left icon
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            tooltip: 'Filter / sort',
-            onPressed: () =>
-                throw UnimplementedError('Filter/sort not implemented yet'),
-          ),
-          const SizedBox(width: 40), // leaves room for the FAB
-          // TODO: build a calendar view screen and navigate to it here
-          // right icon
-          IconButton(
-            icon: const Icon(Icons.calendar_month_outlined),
-            tooltip: 'Calendar view',
-            onPressed: () =>
-                throw UnimplementedError('Calendar view not implemented yet'),
-          ),
-        ],
+    return SafeArea(
+      // ← add this
+      top: false,
+      child: Container(
+        color: const Color(0xFFFCE8CB),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _NavItem(
+              icon: Icons.list_alt,
+              label: 'Tasks',
+              selected: true,
+              onTap: () {},
+            ),
+            _NavItem(
+              icon: Icons.calendar_month_outlined,
+              label: 'Calendar',
+              selected: false,
+              onTap: () =>
+                  throw UnimplementedError('Calendar view not implemented yet'),
+            ),
+            _NavItem(
+              icon: Icons.person_outline,
+              label: 'Profile',
+              selected: false,
+              onTap: () => throw UnimplementedError(
+                'Profile screen not implemented yet',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFF1DDBE) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: const Color(0xFF4A3427)),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: const TextStyle(color: Color(0xFF4A3427), fontSize: 12),
+            ),
+          ],
+        ),
       ),
     );
   }

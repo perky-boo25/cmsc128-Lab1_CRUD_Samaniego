@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../screens/add_edit_task.dart';
 import '../screens/calendar_screen.dart';
 
-enum AppTab { tasks, calendar, profile }
+enum AppTab { tasks, calendar }
 
 class AppAddTaskFAB extends StatelessWidget {
   const AppAddTaskFAB({super.key});
@@ -34,7 +34,7 @@ class AppBottomNav extends StatelessWidget {
       top: false,
       child: Container(
         color: Color(0xFFFCE8CB),
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -58,14 +58,6 @@ class AppBottomNav extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const CalendarScreen()),
                 );
               },
-            ),
-            _NavItem(
-              icon: Icons.person_outline,
-              label: 'Profile',
-              selected: currentTab == AppTab.profile,
-              onTap: () => throw UnimplementedError(
-                'Profile screen not implemented yet',
-              ),
             ),
           ],
         ),

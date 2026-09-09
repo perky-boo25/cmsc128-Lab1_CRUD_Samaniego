@@ -42,6 +42,7 @@ dependencies:
   google_fonts: ^8.2.1
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.1
   flutter_test:
     sdk: flutter
 
@@ -93,3 +94,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  # your icon's background is already the cream color baked into the PNG,
+  # so no separate background_color needed here for adaptive icons —
+  # but if Android crops it oddly, add:
+  #adaptive_icon_background: "#FCE8CB"
+  #adaptive_icon_foreground: "assets/icon/app_icon.png"

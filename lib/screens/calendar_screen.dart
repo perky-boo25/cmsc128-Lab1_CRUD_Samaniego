@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import 'package:intl/intl.dart';
 
 import '../models/task.dart';
 import '../services/firestore_service.dart';
@@ -41,7 +41,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             }
             if (snapshot.hasError) {
               return Center(
-                child: Text('error loading tasks: ${snapshot.error}'),
+                child: Text('Error loading tasks: ${snapshot.error}'),
               );
             }
 
@@ -61,6 +61,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             return Column(
               children: [
                 _buildHeader(),
+                const SizedBox(height: 16),
                 _buildCalendar(tasks),
                 const SizedBox(height: 8),
                 Expanded(child: _buildTaskList(selectedTasks)),
@@ -77,15 +78,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // "calendar" title bar with a notification icon placeholder
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      color: const Color(0xFFFCE8CB),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Calendar',
-            style: Theme.of(context).textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+            'Calendar 𖤓',
+            style: GoogleFonts.dmSerifDisplay(
+              textStyle: Theme.of(context).textTheme.headlineSmall,
+              color: const Color.fromARGB(255, 73, 50, 41),
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -148,7 +155,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     if (tasks.isEmpty) {
       return Center(
         child: Text(
-          'no tasks on ${DateFormat('MMMM d').format(_selectedDay)}',
+          'No tasks on this day★',
           style: TextStyle(color: Colors.grey.shade500),
         ),
       );

@@ -105,8 +105,6 @@ class _HomeHeader extends StatelessWidget {
           ),
           const SizedBox(height: 5),
 
-          //greeting message
-          //NOTE: name is still hardcoded
           RichText(
             text: TextSpan(
               style: GoogleFonts.dmSerifDisplay(
@@ -116,9 +114,8 @@ class _HomeHeader extends StatelessWidget {
               ),
               children: [
                 TextSpan(text: _getGreeting()),
-                // TODO: use the real logged-in user's name
                 TextSpan(
-                  text: 'User.',
+                  text: 'Isk★.',
                   style: TextStyle(
                     fontStyle: FontStyle.italic,
                     color: Color(0xFFC65A42),

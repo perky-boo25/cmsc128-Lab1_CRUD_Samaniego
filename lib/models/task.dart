@@ -14,6 +14,7 @@ class Task {
   final bool isDone;
   final DateTime createdAt;
   final DateTime? deletedAt;
+  final DateTime? completedAt;
 
   //constructor - builds a task
   Task({
@@ -25,6 +26,7 @@ class Task {
     this.isDone = false,
     required this.createdAt,
     this.deletedAt,
+    this.completedAt,
   });
 
   // task -> Map so it can be written to Firestore
@@ -37,6 +39,7 @@ class Task {
       'isDone': isDone,
       'createdAt': Timestamp.fromDate(createdAt),
       'deletedAt': deletedAt != null ? Timestamp.fromDate(deletedAt!) : null,
+      'completedAt' : completedAt != null ? Timestamp.fromDate(completedAt!) : null,
     };
   }
 
@@ -51,6 +54,7 @@ class Task {
       isDone: map['isDone'] as bool? ?? false,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       deletedAt: (map['deletedAt'] as Timestamp?)?.toDate(),
+      completedAt: (map['completedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -63,6 +67,8 @@ class Task {
     bool? isDone,
     DateTime? deletedAt,
     bool clearDeletedAt = false,
+    DateTime? completedAt,
+    bool clearCompletedAt = false,
   }) {
     return Task(
       id: id,
@@ -73,6 +79,7 @@ class Task {
       isDone: isDone ?? this.isDone,
       createdAt: createdAt,
       deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
+      completedAt: clearCompletedAt ? null : (completedAt ?? this.completedAt),
     );
   }
 }

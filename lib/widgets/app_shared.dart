@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../screens/add_edit_task.dart';
+import '../screens/calendar_screen.dart';
 
 enum AppTab { tasks, calendar, profile }
 
@@ -42,7 +43,7 @@ class AppBottomNav extends StatelessWidget {
               label: 'Tasks',
               selected: currentTab == AppTab.tasks,
               onTap: () {
-                if (currentTab == AppTab.calendar) return;
+                if (currentTab == AppTab.tasks) return;
                 Navigator.popUntil(context, (route) => route.isFirst);
               },
             ),
@@ -50,9 +51,13 @@ class AppBottomNav extends StatelessWidget {
               icon: Icons.calendar_month_outlined,
               label: 'Calendar',
               selected: currentTab == AppTab.calendar,
-              onTap: () => throw UnimplementedError(
-                'Calendar screen not implemented yet',
-              ),
+              onTap: () {
+                if (currentTab == AppTab.calendar) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CalendarScreen()),
+                );
+              },
             ),
             _NavItem(
               icon: Icons.person_outline,

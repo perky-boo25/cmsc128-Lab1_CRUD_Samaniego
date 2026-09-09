@@ -32,7 +32,11 @@ class FirestoreService {
 
   //UPDATE
   Future<void> toggleTaskDone(Task task) async {
-    await _taskRef.doc(task.id).update({'isDone': !task.isDone});
+    final newIsDone = !task.isDone;
+    await _taskRef.doc(task.id).update({
+      'isDone': newIsDone,
+      'completedAt': newIsDone ? FieldValue.serverTimestamp() : null,
+    });
   }
 
   Future<void> updateTask(Task task) async {

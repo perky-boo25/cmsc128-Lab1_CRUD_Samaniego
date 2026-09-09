@@ -8,8 +8,6 @@ import '../widgets/task_card.dart';
 import '../widgets/app_shared.dart';
 import 'add_edit_task.dart';
 
-// TODO: build a calendar view screen and import it here
-
 // the app's default screen. This IS the task list for now —
 
 class HomeScreen extends StatelessWidget {
@@ -143,63 +141,123 @@ class _TaskList extends StatelessWidget {
 
   const _TaskList({required this.tasks});
 
+  // true if due today
+  bool _isToday(DateTime d) {
+    final now = DateTime.now();
+    return d.year == now.year && d.month == now.month && d.day == now.day;
+  }
+
+  // pushes done tasks to the bottom
+  List<Task> _withDoneAtBottom(List<Task> input) {
+    final notDone = input.where((t) => !t.isDone).toList();
+    final done = input.where((t) => t.isDone).toList()
+      ..sort((a, b) {
+        final aTime = a.completedAt ?? DateTime(0);
+        final bTime = b.completedAt ?? DateTime(0);
+        return aTime.compareTo(bTime);
+      });
+    return [...notDone, ...done];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    final todayTasks = _withDoneAtBottom(
+      tasks.where((t) => _isToday(t.dueDateTime)).toList(),
+    );
+    final otherTasks = _withDoneAtBottom(
+      tasks.where((t) => !_isToday(t.dueDateTime)).toList(),
+    );
+
+    return ListView(
       padding: const EdgeInsets.only(top: 8, bottom: 80),
-      itemCount: tasks.length,
-      itemBuilder: (context, i) {
-        final task = tasks[i];
-        return TaskCard(
-          task: task,
-          onTap: () => showAddEditTaskSheet(context, existingTask: task),
-          onToggleDone: () async {
-            try {
-              await FirestoreService().toggleTaskDone(task);
-            } catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Could not update task: $e')),
-                );
-              }
-            }
-          },
-          onDelete: () async {
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (dialogContext) => AlertDialog(
-                title: const Text('Delete this task?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext, false),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext, true),
-                    child: const Text('Delete'),
-                  ),
-                ],
-              ),
-            );
+      children: [
+        // section is skipped entirely (no empty header) when it has no tasks
+        if (todayTasks.isNotEmpty) ...[
+          const _SectionHeader(title: 'Today'),
+          ...todayTasks.map((task) => _buildTaskCard(context, task)),
+        ],
+        if (otherTasks.isNotEmpty) ...[
+          const _SectionHeader(title: 'Upcoming Tasks'),
+          ...otherTasks.map((task) => _buildTaskCard(context, task)),
+        ],
+      ],
+    );
+  }
 
-            if (confirmed != true) return;
-
-            final messenger = ScaffoldMessenger.of(
-              context,
-            ); // capture BEFORE the await
-            await FirestoreService().softDelete(task);
-            messenger.showSnackBar(
-              SnackBar(
-                content: const Text('Task deleted'),
-                action: SnackBarAction(
-                  label: 'Undo',
-                  onPressed: () => FirestoreService().undoDelete(task),
-                ),
-              ),
+  Widget _buildTaskCard(BuildContext context, Task task) {
+    return TaskCard(
+      key: ValueKey(task.id),
+      task: task,
+      onTap: () => showAddEditTaskSheet(context, existingTask: task),
+      onToggleDone: () async {
+        try {
+          await FirestoreService().toggleTaskDone(task);
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Could not update task: $e')),
             );
-          },
+          }
+        }
+      },
+      onDelete: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Delete this task?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true) return;
+        if (!context.mounted) return; // guard the gap from the dialog's await
+
+        final messenger = ScaffoldMessenger.of(
+          context,
+        ); // capture BEFORE the await
+        await FirestoreService().softDelete(task);
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('Task deleted'),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () => FirestoreService().undoDelete(task),
+            ),
+          ),
         );
       },
+    );
+  }
+}
+
+/// label group task ("Today" / "Other Tasks").
+class _SectionHeader extends StatelessWidget {
+  final String title;
+
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF4A3427),
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 }
